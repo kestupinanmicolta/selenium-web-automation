@@ -31,12 +31,12 @@ jobs:
       - run: npm install -g allure-commandline
       - name: Run Maven Tests
         continue-on-error: true
-        run: mvn clean test
+        run: mvn clean test -Dallure.results.directory=target/allure-results
       - name: Generate Allure Report
         if: always()
         run: |
           mkdir -p public
-          if [ -d target/allure-results ]; then
+          if [ -d target/allure-results ] && [ "$(ls -A target/allure-results 2>/dev/null)" ]; then
             allure generate target/allure-results --clean -o public
           else
             echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Selenium Report</title>' > public/index.html
