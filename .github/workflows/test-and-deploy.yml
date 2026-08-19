@@ -35,29 +35,74 @@ jobs:
       - name: Run Maven Tests
         continue-on-error: true
         run: mvn clean test -Dheadless=true
+      - name: Debug allure-results
+        if: always()
+        run: |
+          echo "=== Checking allure-results ==="
+          ls -la target/allure-results/ 2>/dev/null || echo "allure-results NOT found"
+          echo "=== Listing target/ ==="
+          ls -la target/ 2>/dev/null || echo "target/ NOT found"
       - name: Generate Allure Report
         if: always()
         run: |
           mkdir -p public
           if [ -d target/allure-results ] && [ "$(ls -A target/allure-results 2>/dev/null)" ]; then
+            echo "Generating Allure report..."
             allure generate target/allure-results --clean -o public
           else
-            echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Selenium Test Report</title>' > public/index.html
-            echo '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">' >> public/index.html
-            echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">' >> public/index.html
-            echo '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;background:#f1f5f9;color:#1e293b}.header{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:white;padding:2rem;text-align:center}.header h1{font-size:1.5rem}.header p{color:#60a5fa}.container{max-width:800px;margin:2rem auto;padding:0 1rem}.card{background:white;border-radius:12px;padding:1.5rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.08)}.card h2{font-size:1rem;margin-bottom:.75rem;color:#0f172a;display:flex;align-items:center;gap:.5rem}.card h2 i{color:#3b82f6}.tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}.tag{background:#eff6ff;color:#3b82f6;padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600}.features{list-style:none}.features li{padding:.4rem 0;font-size:.85rem;color:#475569;display:flex;align-items:center;gap:.5rem}.features li i{color:#10b981;font-size:.7rem}.btn{display:inline-flex;align-items:center;gap:.5rem;background:#0f172a;color:white;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.85rem;margin-top:.5rem}.footer{text-align:center;padding:1.5rem;font-size:.75rem;color:#94a3b8}</style></head>' >> public/index.html
-            echo '<body><div class="header"><h1><i class="fas fa-check-double"></i> Selenium Automation</h1><p>Test Execution Report</p></div>' >> public/index.html
-            echo '<div class="container"><div class="card"><h2><i class="fas fa-info-circle"></i> Project Overview</h2>' >> public/index.html
-            echo '<p style="font-size:.85rem;color:#475569;margin-bottom:1rem">Automated web testing with Selenium 4, TestNG, Page Object Model, and Allure Reports against practicesoftwaretesting.com</p>' >> public/index.html
-            echo '<div class="tags"><span class="tag">Java</span><span class="tag">Selenium 4</span><span class="tag">TestNG</span><span class="tag">POM</span><span class="tag">Allure</span></div></div>' >> public/index.html
-            echo '<div class="card"><h2><i class="fas fa-check-circle"></i> Key Features</h2><ul class="features">' >> public/index.html
-            echo '<li><i class="fas fa-check"></i> Page Object Model design pattern</li>' >> public/index.html
-            echo '<li><i class="fas fa-check"></i> Explicit waits and element interactions</li>' >> public/index.html
-            echo '<li><i class="fas fa-check"></i> Cross-browser testing (Chrome/Firefox)</li>' >> public/index.html
-            echo '<li><i class="fas fa-check"></i> Headless mode for CI environments</li>' >> public/index.html
-            echo '<li><i class="fas fa-check"></i> Allure report integration</li></ul></div>' >> public/index.html
-            echo '<a href="https://github.com/kestupinanmicolta/selenium-web-automation" class="btn"><i class="fab fa-github"></i> View Source Code</a>' >> public/index.html
-            echo '</div><div class="footer">2026 Karen Paola Estupinan Micolta</div></body></html>' >> public/index.html
+            echo "allure-results empty or missing, creating fallback HTML"
+            cat > public/index.html << 'HTMLEOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Selenium Test Report</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+            <style>
+              *{margin:0;padding:0;box-sizing:border-box}
+              body{font-family:Inter,sans-serif;background:#f1f5f9;color:#1e293b}
+              .header{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:white;padding:2rem;text-align:center}
+              .header h1{font-size:1.5rem}.header p{color:#60a5fa}
+              .container{max-width:800px;margin:2rem auto;padding:0 1rem}
+              .card{background:white;border-radius:12px;padding:1.5rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+              .card h2{font-size:1rem;margin-bottom:.75rem;color:#0f172a;display:flex;align-items:center;gap:.5rem}
+              .card h2 i{color:#3b82f6}
+              .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+              .tag{background:#eff6ff;color:#3b82f6;padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600}
+              .features{list-style:none}.features li{padding:.4rem 0;font-size:.85rem;color:#475569;display:flex;align-items:center;gap:.5rem}
+              .features li i{color:#10b981;font-size:.7rem}
+              .btn{display:inline-flex;align-items:center;gap:.5rem;background:#0f172a;color:white;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.85rem;margin-top:.5rem}
+              .footer{text-align:center;padding:1.5rem;font-size:.75rem;color:#94a3b8}
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1><i class="fas fa-check-double"></i> Selenium Automation</h1>
+              <p>Test Execution Report</p>
+            </div>
+            <div class="container">
+              <div class="card">
+                <h2><i class="fas fa-info-circle"></i> Project Overview</h2>
+                <p style="font-size:.85rem;color:#475569;margin-bottom:1rem">Automated web testing with Selenium 4, TestNG, Page Object Model, and Allure Reports against practicesoftwaretesting.com</p>
+                <div class="tags"><span class="tag">Java</span><span class="tag">Selenium 4</span><span class="tag">TestNG</span><span class="tag">POM</span><span class="tag">Allure</span></div>
+              </div>
+              <div class="card">
+                <h2><i class="fas fa-check-circle"></i> Key Features</h2>
+                <ul class="features">
+                  <li><i class="fas fa-check"></i> Page Object Model design pattern</li>
+                  <li><i class="fas fa-check"></i> Explicit waits and element interactions</li>
+                  <li><i class="fas fa-check"></i> Cross-browser testing (Chrome/Firefox)</li>
+                  <li><i class="fas fa-check"></i> Headless mode for CI environments</li>
+                  <li><i class="fas fa-check"></i> Allure report integration</li>
+                </ul>
+              </div>
+              <a href="https://github.com/kestupinanmicolta/selenium-web-automation" class="btn"><i class="fab fa-github"></i> View Source Code</a>
+            </div>
+            <div class="footer">2026 Karen Paola Estupinan Micolta</div>
+          </body>
+          </html>
+          HTMLEOF
           fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
