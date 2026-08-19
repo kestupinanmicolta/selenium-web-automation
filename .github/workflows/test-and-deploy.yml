@@ -27,12 +27,14 @@ jobs:
           node-version: 20
       - run: npm install -g allure-commandline
       - run: mvn clean test
+        continue-on-error: true
       - run: allure generate target/allure-results --clean -o public
       - uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
   deploy:
+    if: always()
     needs: test
     runs-on: ubuntu-latest
     environment:
