@@ -17,7 +17,9 @@ public class LoginTest {
     @Parameters({"browser"})
     public void setUp(@Optional("chrome") String browser) {
         driver = DriverFactory.getDriver(browser);
-        driver.manage().window().maximize();
+        if (System.getProperty("headless") == null) {
+            driver.manage().window().maximize();
+        }
         loginPage = new LoginPage(driver);
         loginPage.navigateTo();
     }
