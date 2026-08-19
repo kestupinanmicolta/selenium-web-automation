@@ -58,3 +58,5 @@ src/test/java/com/karen/
 
 - `@smoke`: Tests críticos
 - `@regression`: Suite completa de regresión
+
+<!-- lastupdate: 2026-08-18 21:18 -->
