@@ -1,25 +1,13 @@
 package com.karen.pages;
 
 import io.qameta.allure.Step;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 
 public class LoginPage {
     private final WebDriver driver;
-
-    @FindBy(dataTestId = "email")
-    private WebElement emailInput;
-
-    @FindBy(dataTestId = "password")
-    private WebElement passwordInput;
-
-    @FindBy(dataTestId = "login-submit")
-    private WebElement loginButton;
-
-    @FindBy(dataTestId = "login-error")
-    private WebElement errorMessage;
 
     public LoginPage(WebDriver driver) {
         this.driver = driver;
@@ -33,20 +21,22 @@ public class LoginPage {
 
     @Step("Iniciar sesión con email: {0}")
     public void login(String email, String password) {
+        WebElement emailInput = driver.findElement(By.cssSelector("[data-testid='email']"));
         emailInput.clear();
         emailInput.sendKeys(email);
+        WebElement passwordInput = driver.findElement(By.cssSelector("[data-testid='password']"));
         passwordInput.clear();
         passwordInput.sendKeys(password);
-        loginButton.click();
+        driver.findElement(By.cssSelector("[data-testid='login-submit']")).click();
     }
 
     @Step("Obtener mensaje de error")
     public String getErrorMessage() {
-        return errorMessage.getText();
+        return driver.findElement(By.cssSelector("[data-testid='login-error']")).getText();
     }
 
     @Step("Verificar si el error es visible")
     public boolean isErrorVisible() {
-        return errorMessage.isDisplayed();
+        return driver.findElement(By.cssSelector("[data-testid='login-error']")).isDisplayed();
     }
 }
