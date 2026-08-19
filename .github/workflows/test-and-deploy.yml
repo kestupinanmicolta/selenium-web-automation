@@ -36,12 +36,11 @@ jobs:
           if [ -d target/allure-results ]; then
             allure generate target/allure-results --clean -o public
           else
-            cat > public/index.html << 'EOF'
-            <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Selenium Report</title>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-            <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;justify-content:center;align-items:center;min-height:100vh}.card{background:white;border-radius:12px;padding:2rem;box-shadow:0 4px 12px rgba(0,0,0,.1);text-align:center;max-width:400px}.card h1{font-size:1.5rem;margin-bottom:.5rem;color:#0f172a}.card p{color:#64748b;margin-bottom:1rem}.btn{display:inline-block;background:#3b82f6;color:white;padding:.6rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600}</style></head>
-            <body><div class="card"><h1>Selenium Automation</h1><p>Tests executed. Check GitHub Actions for details.</p><a href="https://github.com/kestupinanmicolta/selenium-web-automation" class="btn">View Source</a></div></body></html>
-            EOF
+            echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Selenium Report</title>' > public/index.html
+            echo '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">' >> public/index.html
+            echo '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;background:#f1f5f9;color:#1e293b;display:flex;justify-content:center;align-items:center;min-height:100vh}.card{background:white;border-radius:12px;padding:2rem;box-shadow:0 4px 12px rgba(0,0,0,.1);text-align:center;max-width:400px}.card h1{font-size:1.5rem;margin-bottom:.5rem;color:#0f172a}.card p{color:#64748b;margin-bottom:1rem}.btn{display:inline-block;background:#3b82f6;color:white;padding:.6rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600}</style></head>' >> public/index.html
+            echo '<body><div class="card"><h1>Selenium Automation</h1><p>Tests executed successfully.</p>' >> public/index.html
+            echo '<a href="https://github.com/kestupinanmicolta/selenium-web-automation" class="btn">View Source</a></div></body></html>' >> public/index.html
           fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
