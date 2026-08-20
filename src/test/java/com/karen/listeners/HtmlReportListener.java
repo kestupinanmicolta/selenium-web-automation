@@ -1,24 +1,16 @@
 package com.karen.listeners;
 
 import org.testng.*;
-import org.testng.xml.XmlSuite;
+import org.testng.annotations.AfterSuite;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class HtmlReportListener implements ITestListener, ISuiteListener {
+public class HtmlReportListener implements ITestListener {
 
-    private final List<TestMethodResult> results = new ArrayList<>();
-    private final String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-
-    @Override
-    public void onStart(ISuite suite) {}
-
-    @Override
-    public void onFinish(ISuite suite) {
-        generateReport(suite.getName());
-    }
+    private static final List<TestMethodResult> results = Collections.synchronizedList(new ArrayList<>());
+    private static final String TIMESTAMP = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
     @Override
     public void onTestSuccess(ITestResult result) {
@@ -41,7 +33,7 @@ public class HtmlReportListener implements ITestListener, ISuiteListener {
     @Override
     public void onTestFailedButWithinSuccessPercentage(ITestResult result) {}
 
-    private void generateReport(String suiteName) {
+    public static void generateReport() {
         int passed = (int) results.stream().filter(r -> r.status.equals("PASSED")).count();
         int failed = (int) results.stream().filter(r -> r.status.equals("FAILED")).count();
         int skipped = (int) results.stream().filter(r -> r.status.equals("SKIPPED")).count();
@@ -106,19 +98,23 @@ public class HtmlReportListener implements ITestListener, ISuiteListener {
         sb.append("</tbody></table></div>");
 
         sb.append("<a href='https://github.com/kestupinanmicolta/selenium-web-automation' class='card' style='display:inline-flex;align-items:center;gap:.5rem;background:#0f172a;color:white;padding:.8rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.85rem'><i class='fab fa-github'></i> View Source Code</a>");
-        sb.append("</div><div class='footer'>Generated on ").append(timestamp).append(" | Karen Paola Estupinan Micolta</div></body></html>");
+        sb.append("</div><div class='footer'>Generated on ").append(TIMESTAMP).append(" | Karen Paola Estupinan Micolta</div></body></html>");
 
         try {
-            new File("target/allure-results").mkdirs();
-            Writer writer = new OutputStreamWriter(new FileOutputStream("target/allure-results/selenium-report.html"), "UTF-8");
+            File dir = new File("target/allure-results");
+            dir.mkdirs();
+            File outFile = new File(dir, "selenium-report.html");
+            Writer writer = new OutputStreamWriter(new FileOutputStream(outFile), "UTF-8");
             writer.write(sb.toString());
             writer.close();
+            System.out.println("HTML report generated: " + outFile.getAbsolutePath() + " (" + outFile.length() + " bytes)");
         } catch (IOException e) {
+            System.err.println("Failed to generate HTML report: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private String escapeHtml(String s) {
+    private static String escapeHtml(String s) {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("\n", "<br>");
     }
 

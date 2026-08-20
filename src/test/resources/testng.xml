@@ -10,6 +10,7 @@
             </run>
         </groups>
         <classes>
+            <class name="com.karen.tests.ReportGenerator"/>
             <class name="com.karen.tests.LoginTest"/>
             <class name="com.karen.tests.SearchTest"/>
             <class name="com.karen.tests.CartTest"/>
@@ -24,6 +25,7 @@
             </run>
         </groups>
         <classes>
+            <class name="com.karen.tests.ReportGenerator"/>
             <class name="com.karen.tests.LoginTest"/>
             <class name="com.karen.tests.SearchTest"/>
         </classes>
