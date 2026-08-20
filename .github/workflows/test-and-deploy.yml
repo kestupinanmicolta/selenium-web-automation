@@ -31,67 +31,121 @@ jobs:
       - name: Run Maven Tests
         continue-on-error: true
         run: mvn clean test -Dheadless=true
-      - name: Deploy Report
+      - name: Generate HTML Report from Surefire XML
         if: always()
         run: |
           mkdir -p public
-          if [ -f target/allure-results/selenium-report.html ]; then
-            cp target/allure-results/selenium-report.html public/index.html
-            echo "Custom HTML report deployed"
-          else
-            cat > public/index.html << 'HTMLEOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <title>Selenium Test Report</title>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-            <style>
-              *{margin:0;padding:0;box-sizing:border-box}
-              body{font-family:Inter,sans-serif;background:#f1f5f9;color:#1e293b}
-              .header{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:white;padding:2rem;text-align:center}
-              .header h1{font-size:1.5rem}.header p{color:#60a5fa}
-              .container{max-width:800px;margin:2rem auto;padding:0 1rem}
-              .card{background:white;border-radius:12px;padding:1.5rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-              .card h2{font-size:1rem;margin-bottom:.75rem;color:#0f172a;display:flex;align-items:center;gap:.5rem}
-              .card h2 i{color:#3b82f6}
-              .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
-              .tag{background:#eff6ff;color:#3b82f6;padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600}
-              .features{list-style:none}.features li{padding:.4rem 0;font-size:.85rem;color:#475569;display:flex;align-items:center;gap:.5rem}
-              .features li i{color:#10b981;font-size:.7rem}
-              .btn{display:inline-flex;align-items:center;gap:.5rem;background:#0f172a;color:white;padding:.6rem 1.2rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.85rem;margin-top:.5rem}
-              .footer{text-align:center;padding:1.5rem;font-size:.75rem;color:#94a3b8}
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1><i class="fas fa-check-double"></i> Selenium Automation</h1>
-              <p>Test Execution Report</p>
-            </div>
-            <div class="container">
-              <div class="card">
-                <h2><i class="fas fa-info-circle"></i> Project Overview</h2>
-                <p style="font-size:.85rem;color:#475569;margin-bottom:1rem">Automated web testing with Selenium 4, TestNG, Page Object Model, and Allure Reports against practicesoftwaretesting.com</p>
-                <div class="tags"><span class="tag">Java</span><span class="tag">Selenium 4</span><span class="tag">TestNG</span><span class="tag">POM</span><span class="tag">Allure</span></div>
-              </div>
-              <div class="card">
-                <h2><i class="fas fa-check-circle"></i> Key Features</h2>
-                <ul class="features">
-                  <li><i class="fas fa-check"></i> Page Object Model design pattern</li>
-                  <li><i class="fas fa-check"></i> Explicit waits and element interactions</li>
-                  <li><i class="fas fa-check"></i> Cross-browser testing (Chrome/Firefox)</li>
-                  <li><i class="fas fa-check"></i> Headless mode for CI environments</li>
-                  <li><i class="fas fa-check"></i> Allure report integration</li>
-                </ul>
-              </div>
-              <a href="https://github.com/kestupinanmicolta/selenium-web-automation" class="btn"><i class="fab fa-github"></i> View Source Code</a>
-            </div>
-            <div class="footer">2026 Karen Paola Estupinan Micolta</div>
-          </body>
-          </html>
-          HTMLEOF
+
+          TOTAL=0; PASSED=0; FAILED=0; SKIPPED=0
+          TEST_ROWS=""
+
+          if [ -d target/surefire-reports ]; then
+            for xml_file in target/surefire-reports/TEST-*.xml; do
+              [ -f "$xml_file" ] || continue
+              while IFS= read -r line; do
+                t=$(echo "$line" | grep -oP 'tests="\K[^"]*' || echo "0")
+                p=$(echo "$line" | grep -oP 'passed="\K[^"]*' || echo "0")
+                f=$(echo "$line" | grep -oP 'failures="\K[^"]*' || echo "0")
+                s=$(echo "$line" | grep -oP 'skipped="\K[^"]*' || echo "0")
+                TOTAL=$((TOTAL + ${t:-0}))
+                PASSED=$((PASSED + ${p:-0}))
+                FAILED=$((FAILED + ${f:-0}))
+                SKIPPED=$((SKIPPED + ${s:-0}))
+              done < <(grep '<testsuite' "$xml_file" 2>/dev/null)
+
+              classname=$(basename "$xml_file" .xml | sed 's/TEST-//')
+              while IFS= read -r testcase; do
+                name=$(echo "$testcase" | grep -oP 'name="\K[^"]*' || echo "?")
+                time_val=$(echo "$testcase" | grep -oP 'time="\K[^"]*' || echo "0")
+                if echo "$testcase" | grep -q '<failure'; then
+                  status="FAILED"
+                  badge="badge-failed"
+                  errmsg=$(echo "$testcase" | grep -oP '<failure[^>]*message="\K[^"]*' | head -1 || echo "")
+                  if [ -z "$errmsg" ]; then
+                    errmsg=$(echo "$testcase" | sed -n '/<failure/,/<\/failure/p' | head -5)
+                  fi
+                elif echo "$testcase" | grep -q '<skipped'; then
+                  status="SKIPPED"
+                  badge="badge-skipped"
+                  errmsg=""
+                else
+                  status="PASSED"
+                  badge="badge-passed"
+                  errmsg=""
+                fi
+                ms=$(echo "$time_val" | awk '{printf "%.0f", $1 * 1000}')
+                trace_html=""
+                if [ -n "$errmsg" ]; then
+                  short=$(echo "$errmsg" | head -c 150 | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+                  trace_html="<div class='trace'>$short</div>"
+                fi
+                TEST_ROWS="$TEST_ROWS<tr><td><strong>$name</strong>$trace_html</td><td style='font-size:.8rem;color:#64748b'>$classname</td><td><span class='badge $badge'>$status</span></td><td style='font-size:.8rem;color:#64748b'>${ms}ms</td></tr>"
+              done < <(grep '<testcase' "$xml_file" 2>/dev/null)
+            done
           fi
+
+          if [ "$TOTAL" -eq 0 ]; then
+            TOTAL=0; PASSED=0; FAILED=0; SKIPPED=0
+            STATUS="NO RESULTS"
+            SCLASS="status-FAILED"
+          elif [ "$FAILED" -gt 0 ]; then
+            STATUS="FAILED"
+            SCLASS="status-FAILED"
+          else
+            STATUS="PASSED"
+            SCLASS="status-PASSED"
+          fi
+
+          TS=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+          cat > public/index.html << HTMLEOF
+          <!DOCTYPE html><html><head><meta charset='UTF-8'><title>Selenium Test Report</title>
+          <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap' rel='stylesheet'>
+          <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'>
+          <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;background:#f1f5f9;color:#1e293b}
+          .header{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:white;padding:2rem;text-align:center}
+          .header h1{font-size:1.5rem}.header p{color:#60a5fa}
+          .status-badge{display:inline-block;padding:.3rem .8rem;border-radius:20px;font-weight:700;font-size:.85rem;margin-top:.5rem}
+          .status-PASSED{background:#dcfce7;color:#166534}.status-FAILED{background:#fee2e2;color:#991b1b}
+          .stats{display:flex;gap:1rem;justify-content:center;margin:1.5rem 0;flex-wrap:wrap}
+          .stat{background:white;border-radius:12px;padding:1.2rem 1.5rem;box-shadow:0 2px 8px rgba(0,0,0,.08);text-align:center;min-width:120px}
+          .stat h3{font-size:1.8rem;font-weight:700}.stat p{font-size:.75rem;color:#64748b;text-transform:uppercase}
+          .stat.passed h3{color:#16a34a}.stat.failed h3{color:#dc2626}.stat.skipped h3{color:#ca8a04}.stat.total h3{color:#0f172a}
+          .container{max-width:900px;margin:2rem auto;padding:0 1rem}
+          .card{background:white;border-radius:12px;padding:1.5rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+          .card h2{font-size:1rem;margin-bottom:1rem;color:#0f172a;display:flex;align-items:center;gap:.5rem}
+          .card h2 i{color:#3b82f6}
+          .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}.tag{background:#eff6ff;color:#3b82f6;padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:600}
+          table{width:100%;border-collapse:collapse;font-size:.85rem}th{text-align:left;padding:.6rem .8rem;background:#f8fafc;color:#475569;font-weight:600;border-bottom:2px solid #e2e8f0}
+          td{padding:.6rem .8rem;border-bottom:1px solid #f1f5f9}
+          .badge{padding:.2rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+          .badge-passed{background:#dcfce7;color:#166534}.badge-failed{background:#fee2e2;color:#991b1b}.badge-skipped{background:#fef3c7;color:#92400e}
+          .trace{font-size:.75rem;color:#64748b;margin-top:.4rem;max-height:80px;overflow:auto;background:#f8fafc;padding:.4rem;border-radius:4px;font-family:monospace}
+          .footer{text-align:center;padding:1.5rem;font-size:.75rem;color:#94a3b8}
+          a.src{display:inline-flex;align-items:center;gap:.5rem;background:#0f172a;color:white;padding:.8rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.85rem;margin-top:.5rem}
+          </style></head><body>
+          <div class='header'><h1><i class='fas fa-check-double'></i> Selenium Automation</h1>
+          <p>Test Execution Report</p>
+          <div class='status-badge ${SCLASS}'>${STATUS}</div></div>
+          <div class='container'>
+          <div class='stats'>
+          <div class='stat total'><h3>${TOTAL}</h3><p>Total</p></div>
+          <div class='stat passed'><h3>${PASSED}</h3><p>Passed</p></div>
+          <div class='stat failed'><h3>${FAILED}</h3><p>Failed</p></div>
+          <div class='stat skipped'><h3>${SKIPPED}</h3><p>Skipped</p></div>
+          </div>
+          <div class='card'><h2><i class='fas fa-info-circle'></i> Project Overview</h2>
+          <p style='font-size:.85rem;color:#475569;margin-bottom:1rem'>Automated web testing with Selenium 4, TestNG, Page Object Model against practicesoftwaretesting.com</p>
+          <div class='tags'><span class='tag'>Java</span><span class='tag'>Selenium 4</span><span class='tag'>TestNG</span><span class='tag'>POM</span><span class='tag'>Allure</span></div></div>
+          <div class='card'><h2><i class='fas fa-list'></i> Test Results</h2>
+          <table><thead><tr><th>Test</th><th>Class</th><th>Status</th><th>Time</th></tr></thead><tbody>
+          ${TEST_ROWS}
+          </tbody></table></div>
+          <a href='https://github.com/kestupinanmicolta/selenium-web-automation' class='src'><i class='fab fa-github'></i> View Source Code</a>
+          </div><div class='footer'>Generated on ${TS} | Karen Paola Estupinan Micolta</div></body></html>
+          HTMLEOF
+
+          echo "Report generated: $(wc -c < public/index.html) bytes"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
