@@ -20,6 +20,7 @@
         <testng.version>7.10.2</testng.version>
         <allure.version>2.32.0</allure.version>
         <webdrivermanager.version>5.9.2</webdrivermanager.version>
+        <allure.results.directory>target/allure-results</allure.results.directory>
     </properties>
 
     <dependencies>
@@ -61,17 +62,7 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
-                    <argLine>
-                        -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/1.9.22/aspectjweaver-1.9.22.jar"
-                    </argLine>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjweaver</artifactId>
-                        <version>1.9.22</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>io.qameta.allure</groupId>
