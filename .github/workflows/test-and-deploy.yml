@@ -28,14 +28,15 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Run Maven Tests
         continue-on-error: true
         run: mvn clean test -Dheadless=true
       - name: Generate HTML Report
         if: always()
-        run: |
-          mkdir -p public
-          python3 generate_report.py
+        run: node generate_report.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
