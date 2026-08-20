@@ -34,7 +34,7 @@ jobs:
       - run: npm install -g allure-commandline
       - name: Run Maven Tests
         continue-on-error: true
-        run: mvn clean test -Dheadless=true
+        run: mvn clean test -Dheadless=true -Dallure.results.directory=target/allure-results -Dsurefire.useSystemClassLoader=false
       - name: Check Allure Results
         if: always()
         run: |
