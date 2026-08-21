@@ -33,8 +33,7 @@ public class LoginTest {
     @Severity(SeverityLevel.CRITICAL)
     public void testSuccessfulLogin() {
         loginPage.login("customer@practicesoftwaretesting.com", "welcome01");
-        try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
-        Assert.assertFalse(driver.getCurrentUrl().contains("/auth/login"),
+        Assert.assertTrue(loginPage.isLoginSuccessful(),
                          "Login exitoso: deberia redirigir fuera de la pagina de login");
     }
 

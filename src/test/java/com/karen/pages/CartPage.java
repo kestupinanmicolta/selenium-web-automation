@@ -22,6 +22,8 @@ public class CartPage {
 
     @Step("Navegar al carrito")
     public void navigateTo() {
+        try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".ngx-toastr")));
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='nav-cart']"))).click();
         try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
     }

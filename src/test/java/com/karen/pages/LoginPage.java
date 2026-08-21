@@ -34,7 +34,19 @@ public class LoginPage {
         WebElement passwordInput = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='password']")));
         passwordInput.clear();
         passwordInput.sendKeys(password);
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-submit']"))).click();
+        WebElement submitBtn = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-submit'], input[type='submit'], button[type='submit']")));
+        ((org.openqa.selenium.JavascriptExecutor) driver).executeScript("arguments[0].click();", submitBtn);
+    }
+
+    @Step("Verificar que login fue exitoso (redirige fuera de login)")
+    public boolean isLoginSuccessful() {
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(15))
+                .until(d -> !d.getCurrentUrl().contains("/auth/login"));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Step("Obtener mensaje de error")
