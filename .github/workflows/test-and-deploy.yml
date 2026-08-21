@@ -33,7 +33,7 @@ jobs:
           node-version: 20
       - name: Run Maven Tests
         continue-on-error: true
-        run: xvfb-run mvn clean test
+        run: mvn clean test -Dheadless=true
       - name: Generate Allure Report
         if: always()
         uses: simple-elf/allure-report-action@master
@@ -41,6 +41,8 @@ jobs:
           allure_results: target/allure-results
           allure_report: allure-report
           allure_history: allure-history
+        env:
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
       - name: Generate HTML Report
         if: always()
         run: node generate_report.js
