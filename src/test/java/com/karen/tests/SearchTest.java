@@ -14,9 +14,8 @@ public class SearchTest {
     private HomePage homePage;
 
     @BeforeMethod
-    @Parameters({"browser"})
-    public void setUp(@Optional("chrome") String browser) {
-        driver = DriverFactory.getDriver(browser);
+    public void setUp() {
+        driver = DriverFactory.getDriver("chrome");
         if (System.getProperty("headless") == null) { driver.manage().window().maximize(); }
         homePage = new HomePage(driver);
         homePage.navigateTo();

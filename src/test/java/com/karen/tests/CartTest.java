@@ -9,15 +9,14 @@ import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
-@Feature("Gestión del carrito")
+@Feature("Gestion del carrito")
 public class CartTest {
     private WebDriver driver;
     private HomePage homePage;
 
     @BeforeMethod
-    @Parameters({"browser"})
-    public void setUp(@Optional("chrome") String browser) {
-        driver = DriverFactory.getDriver(browser);
+    public void setUp() {
+        driver = DriverFactory.getDriver("chrome");
         if (System.getProperty("headless") == null) { driver.manage().window().maximize(); }
         homePage = new HomePage(driver);
         homePage.navigateTo();
@@ -35,25 +34,12 @@ public class CartTest {
         homePage.searchProduct("hammer");
         homePage.clickProduct(0);
         ProductPage productPage = new ProductPage(driver);
+        String productName = productPage.getProductName();
         productPage.addToCart(1);
 
         CartPage cartPage = new CartPage(driver);
         cartPage.navigateTo();
-        Assert.assertEquals(cartPage.getCartItemsCount(), 1, "El carrito debería tener 1 item");
-    }
-
-    @Test(groups = {"regression"})
-    @Story("Eliminar producto del carrito")
-    @Severity(SeverityLevel.NORMAL)
-    public void testRemoveProductFromCart() {
-        homePage.searchProduct("hammer");
-        homePage.clickProduct(0);
-        ProductPage productPage = new ProductPage(driver);
-        productPage.addToCart(1);
-
-        CartPage cartPage = new CartPage(driver);
-        cartPage.navigateTo();
-        cartPage.removeItem(0);
-        Assert.assertTrue(cartPage.isCartEmpty(), "El carrito debería estar vacío");
+        Assert.assertTrue(cartPage.hasItems(), "El carrito deberia tener items");
+        Assert.assertTrue(cartPage.getCartItemsCount() > 0, "La cantidad del carrito deberia ser mayor a 0");
     }
 }

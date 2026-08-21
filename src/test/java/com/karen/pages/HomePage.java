@@ -5,38 +5,49 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
 public class HomePage {
     private final WebDriver driver;
+    private final WebDriverWait wait;
 
     public HomePage(WebDriver driver) {
         this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         PageFactory.initElements(driver, this);
     }
 
-    @Step("Navegar a la página principal")
+    @Step("Navegar a la pagina principal")
     public void navigateTo() {
         driver.get("https://practicesoftwaretesting.com");
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("[data-test='search-query']")));
+        try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
     }
 
     @Step("Buscar producto: {0}")
     public void searchProduct(String query) {
-        WebElement input = driver.findElement(By.cssSelector("[data-testid='search-query']"));
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='search-query']")));
         input.clear();
         input.sendKeys(query);
-        driver.findElement(By.cssSelector("[data-testid='search-submit']")).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='search-submit']"))).click();
+        try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
     }
 
     @Step("Obtener cantidad de productos")
     public int getProductCount() {
-        return driver.findElements(By.cssSelector("[data-testid='product-card']")).size();
+        List<WebElement> products = driver.findElements(By.cssSelector("a[href*='/product/']"));
+        return products.size();
     }
 
-    @Step("Hacer clic en producto índice: {0}")
+    @Step("Hacer clic en producto indice: {0}")
     public void clickProduct(int index) {
-        List<WebElement> products = driver.findElements(By.cssSelector("[data-testid='product-card']"));
+        List<WebElement> products = wait.until(
+            ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("a[href*='/product/']"))
+        );
         if (index < products.size()) {
             products.get(index).click();
         }
@@ -44,6 +55,6 @@ public class HomePage {
 
     @Step("Obtener conteo del carrito")
     public String getCartCount() {
-        return driver.findElement(By.cssSelector("[data-testid='cart-count']")).getText();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='cart-quantity']"))).getText();
     }
 }

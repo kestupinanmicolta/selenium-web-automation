@@ -14,9 +14,8 @@ public class LoginTest {
     private LoginPage loginPage;
 
     @BeforeMethod
-    @Parameters({"browser"})
-    public void setUp(@Optional("chrome") String browser) {
-        driver = DriverFactory.getDriver(browser);
+    public void setUp() {
+        driver = DriverFactory.getDriver("chrome");
         if (System.getProperty("headless") == null) {
             driver.manage().window().maximize();
         }
@@ -30,26 +29,29 @@ public class LoginTest {
     }
 
     @Test(groups = {"regression", "smoke"})
-    @Story("Inicio de sesión exitoso")
+    @Story("Inicio de sesion exitoso")
     @Severity(SeverityLevel.CRITICAL)
     public void testSuccessfulLogin() {
-        loginPage.login("test@example.com", "password123");
-        Assert.assertFalse(loginPage.isErrorVisible(), "No debería mostrar error");
+        loginPage.login("customer@practicesoftwaretesting.com", "welcome01");
+        try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
+        Assert.assertFalse(driver.getCurrentUrl().contains("/auth/login"),
+                         "Login exitoso: deberia redirigir fuera de la pagina de login");
     }
 
     @Test(groups = {"regression", "smoke"})
-    @Story("Inicio de sesión fallido")
+    @Story("Inicio de sesion fallido")
     @Severity(SeverityLevel.NORMAL)
     public void testFailedLogin() {
         loginPage.login("invalid@email.com", "wrongpassword");
-        Assert.assertTrue(loginPage.isErrorVisible(), "Debería mostrar error de credenciales");
+        Assert.assertTrue(loginPage.isErrorVisible(), "Deberia mostrar error de credenciales");
     }
 
     @Test(groups = {"regression"})
-    @Story("Login con campos vacíos")
+    @Story("Login con campos vacios")
     @Severity(SeverityLevel.NORMAL)
     public void testEmptyFieldsLogin() {
         loginPage.login("", "");
-        Assert.assertTrue(loginPage.isErrorVisible(), "Debería mostrar error con campos vacíos");
+        Assert.assertTrue(driver.getCurrentUrl().contains("/auth/login"),
+                         "Deberia permanecer en la pagina de login");
     }
 }

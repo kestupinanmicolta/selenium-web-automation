@@ -2,9 +2,7 @@
 <suite name="Selenium Test Suite" verbose="1">
     <test name="Regression Tests">
         <groups>
-            <run>
-                <include name="regression"/>
-            </run>
+            <include name="regression"/>
         </groups>
         <classes>
             <class name="com.karen.tests.LoginTest"/>
@@ -16,9 +14,7 @@
 
     <test name="Smoke Tests">
         <groups>
-            <run>
-                <include name="smoke"/>
-            </run>
+            <include name="smoke"/>
         </groups>
         <classes>
             <class name="com.karen.tests.LoginTest"/>
