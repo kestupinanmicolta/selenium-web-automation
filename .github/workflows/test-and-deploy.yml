@@ -33,10 +33,22 @@ jobs:
           node-version: 20
       - name: Run Maven Tests
         continue-on-error: true
-        run: mvn clean test -Dheadless=true
+        run: xvfb-run mvn clean test
+      - name: Generate Allure Report
+        if: always()
+        uses: simple-elf/allure-report-action@master
+        with:
+          allure_results: target/allure-results
+          allure_report: allure-report
+          allure_history: allure-history
       - name: Generate HTML Report
         if: always()
         run: node generate_report.js
+      - name: Copy Allure to public
+        if: always()
+        run: |
+          mkdir -p public/allure
+          cp -r allure-report/* public/allure/ 2>/dev/null || true
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
