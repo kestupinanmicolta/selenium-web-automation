@@ -36,14 +36,21 @@ public class DriverFactory {
             default:
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOpts = new ChromeOptions();
+                chromeOpts.addArguments("--disable-blink-features=AutomationControlled");
+                chromeOpts.setExperimentalOption("excludeSwitches", java.util.List.of("enable-automation"));
+                chromeOpts.setExperimentalOption("useAutomationExtension", false);
+                chromeOpts.addArguments("--window-size=1920,1080");
                 if (headless) {
                     chromeOpts.addArguments("--headless=new");
                     chromeOpts.addArguments("--no-sandbox");
                     chromeOpts.addArguments("--disable-dev-shm-usage");
                     chromeOpts.addArguments("--disable-gpu");
-                    chromeOpts.addArguments("--window-size=1920,1080");
                 }
-                return new ChromeDriver(chromeOpts);
+                ChromeDriver driver = new ChromeDriver(chromeOpts);
+                driver.executeCdpCommand("Page.addScriptToEvaluateOnNewDocument", java.util.Map.of(
+                    "source", "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+                ));
+                return driver;
         }
     }
 
