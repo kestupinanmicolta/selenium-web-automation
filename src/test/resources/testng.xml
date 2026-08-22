@@ -2,6 +2,7 @@
 <suite name="Selenium Test Suite" verbose="1">
     <listeners>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+        <listener class-name="com.karen.utils.ExtentReportListener"/>
     </listeners>
     <test name="Regression Tests">
         <groups>

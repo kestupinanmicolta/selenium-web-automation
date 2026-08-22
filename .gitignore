@@ -1,6 +1,7 @@
 target/
+allure-report/
+allure-history/
 allure-results/
-public/
 node_modules/
 package-lock.json
 package.json

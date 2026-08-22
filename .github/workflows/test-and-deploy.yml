@@ -1,4 +1,4 @@
-name: Test & Deploy Report
+name: Deploy Report
 on:
   push:
     branches: [main]
@@ -17,7 +17,7 @@ env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -28,12 +28,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: actions/setup-node@v4
+      - name: Download Allure History
+        uses: actions/checkout@v4
         with:
-          node-version: 20
-      - name: Run Maven Tests
+          ref: gh-pages
+          path: gh-pages-data
         continue-on-error: true
-        run: mvn clean test -Dheadless=true
+      - name: Restore Allure History
+        if: hashFiles('gh-pages-data/allure-history/**') != ''
+        run: |
+          mkdir -p allure-history
+          cp -r gh-pages-data/allure-history/* allure-history/ 2>/dev/null || true
       - name: Generate Allure Report
         if: always()
         uses: simple-elf/allure-report-action@master
@@ -43,14 +48,18 @@ jobs:
           allure_history: allure-history
         env:
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Generate HTML Report
         if: always()
         run: node generate_report.js
-      - name: Copy Allure to public
+      - name: Prepare public
         if: always()
         run: |
           mkdir -p public/allure
           cp -r allure-report/* public/allure/ 2>/dev/null || true
+          ls -la public/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
