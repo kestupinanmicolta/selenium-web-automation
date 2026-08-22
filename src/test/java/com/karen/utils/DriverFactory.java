@@ -21,7 +21,7 @@ public class DriverFactory {
     }
 
     private static boolean isHeadless() {
-        return System.getProperty("headless") != null || System.getenv("CI") != null;
+        return System.getProperty("headless") != null;
     }
 
     private static WebDriver createDriver(String browser) {
