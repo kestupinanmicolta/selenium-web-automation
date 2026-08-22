@@ -33,7 +33,7 @@ jobs:
           node-version: 20
       - name: Run Maven Tests
         continue-on-error: true
-        run: xvfb-run mvn clean test
+        run: mvn clean test -Dheadless=true
       - name: Generate Allure Report
         if: always()
         uses: simple-elf/allure-report-action@master
