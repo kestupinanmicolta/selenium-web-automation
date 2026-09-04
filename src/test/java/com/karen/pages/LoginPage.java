@@ -23,8 +23,23 @@ public class LoginPage {
 
     @Step("Navegar a la pagina de login")
     public void navigateTo() {
-        driver.get("https://practicesoftwaretesting.com/auth/login");
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("[data-test='email']")));
+        int maxAttempts = 3;
+        int timeout = System.getenv("CI") != null ? 40 : 20;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                driver.get("https://practicesoftwaretesting.com/auth/login");
+                new WebDriverWait(driver, Duration.ofSeconds(timeout))
+                    .until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("[data-test='email']")));
+                return;
+            } catch (Exception e) {
+                System.out.println("Login navigateTo attempt " + attempt + "/" + maxAttempts + " failed: " + e.getMessage());
+                if (attempt == maxAttempts) {
+                    System.out.println("Login page final failure - URL: " + driver.getCurrentUrl());
+                    throw e;
+                }
+                try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+            }
+        }
     }
 
     @Step("Iniciar sesion con email: {0}")

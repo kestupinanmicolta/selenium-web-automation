@@ -24,9 +24,24 @@ public class HomePage {
 
     @Step("Navegar a la pagina principal")
     public void navigateTo() {
-        driver.get("https://practicesoftwaretesting.com");
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("[data-test='search-query']")));
-        try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
+        int maxAttempts = 3;
+        int timeout = System.getenv("CI") != null ? 40 : 20;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                driver.get("https://practicesoftwaretesting.com");
+                new WebDriverWait(driver, Duration.ofSeconds(timeout))
+                    .until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("[data-test='search-query']")));
+                try { Thread.sleep(3000); } catch (InterruptedException ignored) {}
+                return;
+            } catch (Exception e) {
+                System.out.println("Home navigateTo attempt " + attempt + "/" + maxAttempts + " failed: " + e.getMessage());
+                if (attempt == maxAttempts) {
+                    System.out.println("Home page final failure - URL: " + driver.getCurrentUrl());
+                    throw e;
+                }
+                try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+            }
+        }
     }
 
     @Step("Buscar producto: {0}")
