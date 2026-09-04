@@ -34,7 +34,7 @@ public class ExtentReportListener implements ITestListener {
         spark.config().setReportName("Karen Paola Estupinan - QA Automation");
         spark.config().setTheme(Theme.DARK);
         spark.config().setEncoding("utf-8");
-        spark.config().setTimeStampFormat("dd MMM yyyy, HH:mm:ss");
+        spark.config().setTimeStampFormat("yyyy-MM-dd HH:mm:ss");
 
         extent = new ExtentReports();
         extent.attachReporter(spark);
@@ -78,7 +78,7 @@ public class ExtentReportListener implements ITestListener {
                 "Test fallido", ExtentColor.RED));
         test.log(Status.FAIL, "Error: " + result.getThrowable().getMessage());
         test.log(Status.INFO, "Duracion: " + getDuration(result));
-        test.log(Status.INFO, result.getThrowable(), false);
+        test.fail(result.getThrowable());
         attachScreenshot(result, "FAILURE");
     }
 
@@ -124,13 +124,14 @@ public class ExtentReportListener implements ITestListener {
                 String testName = result.getMethod().getMethodName();
                 String fileName = testName + "_" + status + "_" + timestamp + ".png";
                 String filePath = SCREENSHOT_DIR + "/" + fileName;
+                String absolutePath = new File(filePath).getAbsolutePath();
 
                 File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
                 java.nio.file.Files.copy(screenshot.toPath(),
-                        new File(filePath).toPath(),
+                        new File(absolutePath).toPath(),
                         java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
-                test.addScreenCaptureFromPath(filePath,
+                test.addScreenCaptureFromPath(absolutePath,
                         "Screenshot - " + status + " - " + testName);
             }
         } catch (Exception e) {
