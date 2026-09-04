@@ -16,7 +16,8 @@ public class LoginPage {
 
     public LoginPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        int timeout = System.getenv("CI") != null ? 40 : 20;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
         PageFactory.initElements(driver, this);
     }
 
@@ -41,7 +42,8 @@ public class LoginPage {
     @Step("Verificar que login fue exitoso (redirige fuera de login)")
     public boolean isLoginSuccessful() {
         try {
-            new WebDriverWait(driver, Duration.ofSeconds(20))
+            int timeout = System.getenv("CI") != null ? 40 : 20;
+            new WebDriverWait(driver, Duration.ofSeconds(timeout))
                 .until(d -> {
                     String url = d.getCurrentUrl();
                     return !url.contains("/auth/login") && !url.contains("/login");

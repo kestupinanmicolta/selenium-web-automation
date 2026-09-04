@@ -3,6 +3,7 @@
     <listeners>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
         <listener class-name="com.karen.utils.ExtentReportListener"/>
+        <listener class-name="com.karen.utils.AnnotationTransformer"/>
     </listeners>
     <test name="Regression Tests">
         <groups>

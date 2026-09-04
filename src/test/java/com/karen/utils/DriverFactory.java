@@ -30,7 +30,11 @@ public class DriverFactory {
             case "firefox":
                 WebDriverManager.firefoxdriver().setup();
                 FirefoxOptions ffOpts = new FirefoxOptions();
-                if (headless) ffOpts.addArguments("--headless");
+                if (headless) {
+                    ffOpts.addArguments("--headless");
+                    ffOpts.addArguments("--width=1920");
+                    ffOpts.addArguments("--height=1080");
+                }
                 return new FirefoxDriver(ffOpts);
             case "chrome":
             default:
@@ -40,11 +44,25 @@ public class DriverFactory {
                 chromeOpts.setExperimentalOption("excludeSwitches", java.util.List.of("enable-automation"));
                 chromeOpts.setExperimentalOption("useAutomationExtension", false);
                 chromeOpts.addArguments("--window-size=1920,1080");
+                chromeOpts.addArguments("--start-maximized");
                 if (headless) {
                     chromeOpts.addArguments("--headless=new");
                     chromeOpts.addArguments("--no-sandbox");
                     chromeOpts.addArguments("--disable-dev-shm-usage");
                     chromeOpts.addArguments("--disable-gpu");
+                    chromeOpts.addArguments("--disable-extensions");
+                    chromeOpts.addArguments("--disable-infobars");
+                    chromeOpts.addArguments("--disable-popup-blocking");
+                    chromeOpts.addArguments("--disable-background-networking");
+                    chromeOpts.addArguments("--disable-sync");
+                    chromeOpts.addArguments("--disable-translate");
+                    chromeOpts.addArguments("--metrics-recording-only");
+                    chromeOpts.addArguments("--mute-audio");
+                    chromeOpts.addArguments("--no-first-run");
+                    chromeOpts.addArguments("--disable-backgrounding-occluded-windows");
+                    chromeOpts.addArguments("--disable-renderer-backgrounding");
+                    chromeOpts.addArguments("--disable-features=TranslateUI");
+                    chromeOpts.addArguments("--window-size=1920,1080");
                 }
                 ChromeDriver driver = new ChromeDriver(chromeOpts);
                 driver.executeCdpCommand("Page.addScriptToEvaluateOnNewDocument", java.util.Map.of(
