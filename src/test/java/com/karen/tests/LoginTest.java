@@ -13,6 +13,10 @@ public class LoginTest {
     private WebDriver driver;
     private LoginPage loginPage;
 
+    public WebDriver getDriver() {
+        return driver;
+    }
+
     @BeforeMethod
     public void setUp() {
         driver = DriverFactory.getDriver("chrome");

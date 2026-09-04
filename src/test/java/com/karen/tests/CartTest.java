@@ -14,6 +14,10 @@ public class CartTest {
     private WebDriver driver;
     private HomePage homePage;
 
+    public WebDriver getDriver() {
+        return driver;
+    }
+
     @BeforeMethod
     public void setUp() {
         driver = DriverFactory.getDriver("chrome");
