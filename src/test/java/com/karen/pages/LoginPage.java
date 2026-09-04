@@ -41,10 +41,23 @@ public class LoginPage {
     @Step("Verificar que login fue exitoso (redirige fuera de login)")
     public boolean isLoginSuccessful() {
         try {
-            new WebDriverWait(driver, Duration.ofSeconds(15))
-                .until(d -> !d.getCurrentUrl().contains("/auth/login"));
+            new WebDriverWait(driver, Duration.ofSeconds(20))
+                .until(d -> {
+                    String url = d.getCurrentUrl();
+                    return !url.contains("/auth/login") && !url.contains("/login");
+                });
             return true;
         } catch (Exception e) {
+            String currentUrl = driver.getCurrentUrl();
+            System.out.println("Login fallido - URL actual: " + currentUrl);
+            try {
+                String pageSource = driver.getPageSource();
+                if (pageSource.contains("Invalid") || pageSource.contains("error") || pageSource.contains("incorrect")) {
+                    System.out.println("Posible mensaje de error en pagina");
+                }
+            } catch (Exception ex) {
+                // ignore
+            }
             return false;
         }
     }

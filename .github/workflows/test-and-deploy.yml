@@ -30,7 +30,6 @@ jobs:
 
       - name: Run Selenium Tests
         run: mvn clean test -Dheadless=true "-Duser.language=en" "-Duser.country=US"
-        continue-on-error: true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
